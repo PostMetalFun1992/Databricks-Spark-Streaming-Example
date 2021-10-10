@@ -44,4 +44,12 @@ hotel_weather_raw = spark.read.format("parquet").load(f"{IN_STORAGE_URI}/hotel-w
 
 # COMMAND ----------
 
-hotel_weather_raw.write.format("parquet").mode("ignore").save(f"{OUT_STORAGE_URI}/hotel-weather")
+# IMPORTANT: Batch logic
+from pyspark.sql import functions as f
+from pyspark.sql.functions import col
+
+hotel_weather_cleaned = hotel_weather_raw.select("id", "address", "city", "year", "month", "day", "avg_tmpr_c") \
+    .withColumnRenamed("id", "hotel_id") \
+    .withColumnRenamed("address", "hotel_name")
+
+display(hotel_weather_cleaned)
