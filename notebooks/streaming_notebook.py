@@ -154,3 +154,33 @@ hotels_count_by_city_table = (
 )
 
 display(hotels_count_by_city_table)
+
+# COMMAND ----------
+
+weather_count_by_city_stream = (
+    hotel_weather_cleaned_stream
+    .groupBy(f.window("wthr_timestamp", "1 day"), "country", "city")
+    .agg(f.max("tmpr_c").alias("max_tmpr_c"), f.min("tmpr_c").alias("min_tmpr_c"), f.avg("tmpr_c").alias("avg_tmpr_c"))
+)
+
+# COMMAND ----------
+
+(
+    weather_count_by_city_stream
+    .writeStream
+    .outputMode("complete")
+    .format("memory")
+    .queryName("weather_count_by_city")
+    .start()
+)
+
+# COMMAND ----------
+
+weather_count_by_city_table = (
+    spark
+    .read
+    .table("weather_count_by_city")
+    .select("*")
+)
+
+display(weather_count_by_city_table)
