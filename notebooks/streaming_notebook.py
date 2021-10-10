@@ -53,6 +53,7 @@ hotel_weather_cleaned = hotel_weather_raw \
         col("id"), col("address"), col("country"), col("city"), f.to_timestamp(col("wthr_date")).alias("wthr_timestamp"), col("avg_tmpr_c")
     ) \
     .withColumnRenamed("id", "hotel_id") \
+    .withColumnRenamed("avg_tmpr_c", "tmpr_c") \
     .withColumnRenamed("address", "hotel_name")
 
 display(hotel_weather_cleaned)
@@ -61,6 +62,14 @@ display(hotel_weather_cleaned)
 
 hotels_count_by_city = hotel_weather_cleaned \
     .groupBy("country", "city", "wthr_timestamp") \
-    .agg(f.countDistinct("hotel_id").alias("hotels_count_distinct"))
+    .agg(f.countDistinct("hotel_id").alias("hotels_count"))
 
 display(hotels_count_by_city)
+
+# COMMAND ----------
+
+weather_count_by_city = hotel_weather_cleaned \
+    .groupBy("country", "city", "wthr_timestamp") \
+    .agg(f.max("tmpr_c").alias("max_tmpr_c"), f.min("tmpr_c").alias("min_tmpr_c"), f.avg("tmpr_c").alias("avg_tmpr_c"))
+
+display(weather_count_by_city)
