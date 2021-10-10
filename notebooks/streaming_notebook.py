@@ -44,4 +44,4 @@ hotel_weather_raw = spark.read.format("parquet").load(f"{IN_STORAGE_URI}/hotel-w
 
 # COMMAND ----------
 
-
+hotel_weather_raw.write.format("parquet").mode("ignore").save(f"{OUT_STORAGE_URI}/hotel-weather")
