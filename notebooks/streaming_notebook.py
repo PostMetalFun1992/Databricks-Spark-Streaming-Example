@@ -63,7 +63,8 @@ display(hotel_weather_cleaned)
 hotels_count_by_city = (
     hotel_weather_cleaned
     .groupBy("country", "city", "wthr_timestamp")
-    .agg(f.count("hotel_id").alias("hotels_count"))
+    .agg(f.countDistinct("hotel_id").alias("hotels_count"))
+    .orderBy(f.col("hotels_count").desc())
 )
 
 display(hotels_count_by_city)
@@ -125,6 +126,8 @@ hotel_weather_cleaned_stream = (
 
 hotels_count_by_city_stream = (
     hotel_weather_cleaned_stream
+    .select("wthr_timestamp", "country", "city", "hotel_id")
+    .distinct()
     .groupBy(f.window("wthr_timestamp", "1 day"), col("country"), col("city"))
     .agg(f.count("hotel_id").alias("hotels_count"))
 )
@@ -142,5 +145,12 @@ hotels_count_by_city_stream = (
 
 # COMMAND ----------
 
-# Just a quick check
-display(spark.sql("select * from hotels_count_by_city order by hotels_count desc"))
+hotels_count_by_city_table = (
+    spark
+    .read
+    .table("hotels_count_by_city")
+    .select("*")
+    .orderBy(col("hotels_count").desc())
+)
+
+display(hotels_count_by_city_table)
