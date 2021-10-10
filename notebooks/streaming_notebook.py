@@ -48,8 +48,19 @@ hotel_weather_raw = spark.read.format("parquet").load(f"{IN_STORAGE_URI}/hotel-w
 from pyspark.sql import functions as f
 from pyspark.sql.functions import col
 
-hotel_weather_cleaned = hotel_weather_raw.select("id", "address", "city", "year", "month", "day", "avg_tmpr_c") \
+hotel_weather_cleaned = hotel_weather_raw \
+    .select(
+        col("id"), col("address"), col("country"), col("city"), f.to_timestamp(col("wthr_date")).alias("wthr_timestamp"), col("avg_tmpr_c")
+    ) \
     .withColumnRenamed("id", "hotel_id") \
     .withColumnRenamed("address", "hotel_name")
 
 display(hotel_weather_cleaned)
+
+# COMMAND ----------
+
+hotels_count_by_city = hotel_weather_cleaned \
+    .groupBy("country", "city", "wthr_timestamp") \
+    .agg(f.countDistinct("hotel_id").alias("hotels_count_distinct"))
+
+display(hotels_count_by_city)
