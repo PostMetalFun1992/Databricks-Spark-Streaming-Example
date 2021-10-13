@@ -172,9 +172,9 @@ weather_count_by_city_stream = (
     weather_count_by_city_stream
     .writeStream
     .outputMode("complete")
-    .format("memory")
-    .queryName("weather_count_by_city")
-    .start()
+    .format("delta")
+    .option("checkpointLocation", "dbfs:/checkpoints/weather_count_by_city_stream")
+    .start(f"{OUT_STORAGE_URI}/weather_count_by_city")
 )
 
 # COMMAND ----------
@@ -182,7 +182,8 @@ weather_count_by_city_stream = (
 weather_count_by_city_table = (
     spark
     .read
-    .table("weather_count_by_city")
+    .format("delta")
+    .load(f"{OUT_STORAGE_URI}/weather_count_by_city")
     .select("*")
 )
 
