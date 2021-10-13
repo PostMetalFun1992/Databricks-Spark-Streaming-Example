@@ -40,13 +40,15 @@ OUT_STORAGE_URI = f"abfss://{AZStorage.OUT_CONTAINER}@{AZStorage.OUT_STORAGE_ACC
 
 # COMMAND ----------
 
+from pyspark.sql import functions as f
+from pyspark.sql.functions import col
+
+# COMMAND ----------
+
 # IMPORTANT: Batch logic
 hotel_weather_raw = spark.read.format("parquet").load(f"{IN_STORAGE_URI}/hotel-weather")
 
 # COMMAND ----------
-
-from pyspark.sql import functions as f
-from pyspark.sql.functions import col
 
 hotel_weather_cleaned = (
     hotel_weather_raw
@@ -138,9 +140,9 @@ hotels_count_by_city_stream = (
     hotels_count_by_city_stream
     .writeStream
     .outputMode("complete")
-    .format("memory")
-    .queryName("hotels_count_by_city")
-    .start()
+    .format("delta")
+    .option("checkpointLocation", "dbfs:/checkpoints/hotels_count_by_city_stream")
+    .start(f"{OUT_STORAGE_URI}/hotels_count_by_city")
 )
 
 # COMMAND ----------
@@ -148,7 +150,8 @@ hotels_count_by_city_stream = (
 hotels_count_by_city_table = (
     spark
     .read
-    .table("hotels_count_by_city")
+    .format("delta")
+    .load(f"{OUT_STORAGE_URI}/hotels_count_by_city")
     .select("*")
     .orderBy(col("hotels_count").desc())
 )
