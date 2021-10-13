@@ -36,3 +36,8 @@ databricks configure --token
 databricks secrets create-scope --initial-manage-principal users --scope abfs-access
 databricks secrets put --scope abfs-access --key storage-creds --binary-file ./config/storage-creds.ini
 ```
+
+## 3. Warm up your Databricks workspace
+* Create cluster
+* Attach this repo to the workspace
+* Launch the notebook
